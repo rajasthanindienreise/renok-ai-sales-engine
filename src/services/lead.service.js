@@ -4,60 +4,25 @@ const { detectTrek } = require("../utils/trekDetector");
 const { createPaymentLink } = require("./payment.service");
 
 async function upsertLead(phone, message) {
+  console.log("Lead Service Running...");
+  console.log("Phone:", phone);
+  console.log("Message:", message);
 
   const leadStatus = scoreLead(message);
   const trekName = detectTrek(message);
 
-  // Check if lead already exists
-  const { data: existingLead, error: selectError } = await supabase
+  console.log("Lead Status:", leadStatus);
+  console.log("Detected Trek:", trekName);
+
+  // Check if lead exists
+  const { data: existingLead } = await supabase
     .from("leads")
     .select("*")
     .eq("phone", phone)
-    .single();
+    .maybeSingle();
 
-  if (selectError && selectError.code !== "PGRST116") {
-    console.log("Select Error:", selectError);
-  }
-
-  // If HOT lead → Generate payment link
-  let paymentLink = null;
-
-  if (leadStatus === "hot" && trekName) {
-
-  console.log("Detected Trek:", trekName);   // 👈 ADD THIS LINE
-
-  const { data: trekDataArray, error: trekError } = await supabase
-    .from("treks")
-    .select("*")
-    .eq("trek_name", trekName);
-
-if (trekError) {
-  console.log("Trek Fetch Error:", trekError);
-}
-
-const trekData = trekDataArray && trekDataArray.length > 0
-  ? trekDataArray[0]
-  : null;
-
-    if (trekError) {
-      console.log("Trek Fetch Error:", trekError);
-    }
-
-    if (trekData) {
-      paymentLink = await createPaymentLink(
-        phone,
-        trekName,
-        trekData.base_price
-      );
-
-      console.log("Payment Link:", paymentLink);
-    }
-  }
-
-  // Update existing lead
   if (existingLead) {
-
-    const { error: updateError } = await supabase
+    await supabase
       .from("leads")
       .update({
         last_message: message,
@@ -65,32 +30,42 @@ const trekData = trekDataArray && trekDataArray.length > 0
         trek_name: trekName
       })
       .eq("phone", phone);
-
-    if (updateError) {
-      console.log("Update Error:", updateError);
-    }
-
   } else {
-
-    // Insert new lead
-    const { error: insertError } = await supabase
-      .from("leads")
-      .insert([
-        {
-          phone,
-          name: "Unknown",
-          last_message: message,
-          lead_status: leadStatus,
-          trek_name: trekName
-        }
-      ]);
-
-    if (insertError) {
-      console.log("Insert Error:", insertError);
-    }
+    await supabase.from("leads").insert([
+      {
+        phone,
+        last_message: message,
+        lead_status: leadStatus,
+        trek_name: trekName
+      }
+    ]);
   }
 
-  return paymentLink; // important for future WhatsApp reply
+  // Generate payment link ONLY if hot lead + trek detected
+  if (leadStatus === "hot" && trekName) {
+    const { data: trekData } = await supabase
+      .from("treks")
+      .select("*")
+      .eq("trek_name", trekName)
+      .maybeSingle();
+
+    if (!trekData) {
+      console.log("Trek not found in DB");
+      return null;
+    }
+
+    const paymentLink = await createPaymentLink(
+      phone,
+      trekName,
+      trekData.price
+    );
+
+    console.log("Payment link generated:", paymentLink);
+
+    return paymentLink;
+  }
+
+  return null;
 }
 
 module.exports = { upsertLead };

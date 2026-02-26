@@ -22,9 +22,7 @@ async function handleAskAI(req, res) {
       finalReply += `\n\nTo confirm your seat, please complete payment here:\n${paymentLink}`;
     }
 
-    res.json({
-      reply: finalReply
-    });
+    res.json({ reply: finalReply });
 
   } catch (error) {
     console.error("AI Controller Error:", error);

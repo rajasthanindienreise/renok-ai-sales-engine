@@ -1,36 +1,26 @@
 function scoreLead(message) {
   const text = message.toLowerCase();
 
-  const hotKeywords = [
-    "book",
-    "payment",
-    "price",
-    "cost",
-    "available",
-    "departure",
-    "how to confirm",
-    "advance",
-    "upi",
-    "send details"
-  ];
-
-  const warmKeywords = [
-    "itinerary",
-    "difficulty",
-    "snow",
-    "weather",
-    "fitness",
-    "how many days",
-    "best time",
-    "safe",
-    "girls"
-  ];
-
-  if (hotKeywords.some(word => text.includes(word))) {
+  if (
+    text.includes("book") ||
+    text.includes("confirm") ||
+    text.includes("payment") ||
+    text.includes("pay") ||
+    text.includes("reserve") ||
+    text.includes("seat") ||
+    text.includes("register")
+  ) {
     return "hot";
   }
 
-  if (warmKeywords.some(word => text.includes(word))) {
+  if (
+    text.includes("price") ||
+    text.includes("cost") ||
+    text.includes("details") ||
+    text.includes("itinerary") ||
+    text.includes("snow") ||
+    text.includes("difficulty")
+  ) {
     return "warm";
   }
 

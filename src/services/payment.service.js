@@ -2,16 +2,17 @@ const Razorpay = require("razorpay");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 async function createPaymentLink(phone, trekName, amount) {
   try {
-    const paymentLink = await razorpay.paymentLink.create({
-      amount: amount * 100, // convert to paise
+    const payment = await razorpay.paymentLink.create({
+      amount: amount * 100,
       currency: "INR",
       description: `Booking for ${trekName}`,
       customer: {
+        name: "Renok Customer",
         contact: phone
       },
       notify: {
@@ -20,10 +21,9 @@ async function createPaymentLink(phone, trekName, amount) {
       }
     });
 
-    return paymentLink.short_url;
-
+    return payment.short_url;
   } catch (error) {
-    console.log("Razorpay Error:", error);
+    console.error("Payment Link Error:", error);
     return null;
   }
 }
