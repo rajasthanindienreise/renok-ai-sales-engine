@@ -1,15 +1,10 @@
 {
   "name": "renok-ai",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-  "start": "node src/server.js",
-  "dev": "node src/server.js"
-},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+    "start": "node src/server.js"
+  },
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",

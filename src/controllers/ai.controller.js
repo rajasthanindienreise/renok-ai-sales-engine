@@ -30,4 +30,4 @@ async function handleAskAI(req, res) {
   }
 }
 
-module.exports = { handleAskAI };
+mmodule.exports = askAI;
